@@ -17,15 +17,8 @@ export default function GameDetailPage() {
   const [confirm, setConfirm] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from('games')
-      .select('*, game_results(*, players(*))')
-      .eq('id', id)
-      .single()
-      .then(({ data }: { data: unknown }) => {
-        setGame(data as GameWithResults);
-        setLoading(false);
-      });
+    supabase.from('games').select('*, game_results(*, players(*))').eq('id', id).single()
+      .then(({ data }: { data: unknown }) => { setGame(data as GameWithResults); setLoading(false); });
   }, [id]);
 
   async function deleteGame() {
@@ -34,97 +27,93 @@ export default function GameDetailPage() {
     router.push('/');
   }
 
-  if (loading) return <div className="p-8 text-center" style={{ color: 'var(--muted)' }}>Chargement…</div>;
-  if (!game) return <div className="p-8 text-center text-red-400">Partie introuvable.</div>;
+  if (loading) return (
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }} style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link href="/" style={{ color: 'var(--muted)' }} className="btn-ghost" style2={{padding: '6px 10px'}}><ArrowLeft size={16} /></Link>
+        </div>
+      </div>
+      <div className="max-w-2xl mx-auto px-5 py-8" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 48, borderRadius: 8 }} />)}
+      </div>
+    </div>
+  );
+
+  if (!game) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--danger)' }}>Partie introuvable.</div>;
 
   const played = [...(game.game_results ?? [])].filter((r) => !r.absent).sort((a, b) => (a.position ?? 99) - (b.position ?? 99));
   const absent = (game.game_results ?? []).filter((r) => r.absent);
-
   const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/" style={{ color: 'var(--muted)' }} className="hover:opacity-80">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--accent-gold)' }}>
-          {new Date(game.played_at).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-        </h1>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+      <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }} style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link href="/" className="btn-ghost" style={{ padding: '6px 10px' }}><ArrowLeft size={16} /></Link>
+          <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 15 }}>
+            {new Date(game.played_at).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </span>
+        </div>
       </div>
 
-      {game.heads_up_timer_used && (
-        <div className="mb-4 text-sm px-3 py-2 rounded-lg inline-flex items-center gap-2" style={{ backgroundColor: 'var(--surface)', color: 'var(--muted)' }}>
-          ⏱️ Timer heads-up utilisé
-        </div>
-      )}
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 20px' }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {game.notes && (
-        <div className="mb-6 rounded-xl px-5 py-4" style={{ backgroundColor: 'var(--surface)' }}>
-          <div className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Note</div>
-          <p>{game.notes}</p>
-        </div>
-      )}
+        {game.heads_up_timer_used && (
+          <div className="badge" style={{ alignSelf: 'flex-start', padding: '5px 12px' }}>⏱ Timer heads-up utilisé</div>
+        )}
 
-      {/* Results */}
-      <div className="rounded-xl overflow-hidden mb-6" style={{ backgroundColor: 'var(--surface)' }}>
-        <div className="px-5 py-4 border-b text-sm font-medium" style={{ borderColor: 'var(--surface2)', color: 'var(--muted)' }}>
-          Résultats ({played.length} joueurs)
-        </div>
-        {played.map((r) => (
-          <div
-            key={r.id}
-            className="flex items-center justify-between px-5 py-3 border-t"
-            style={{ borderColor: 'var(--surface2)' }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{MEDAL[r.position ?? 99] ?? `${r.position}e`}</span>
-              <Link href={`/players/${r.player_id}`} className="font-medium hover:underline">
-                {r.players?.name}
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              {r.chip_count != null && (
-                <span className="text-sm" style={{ color: 'var(--muted)' }}>{r.chip_count} chips</span>
-              )}
-              <span className="font-semibold" style={{ color: 'var(--accent-gold)' }}>+{r.points_earned} pts</span>
-            </div>
+        {game.notes && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 18px' }}>
+            <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>Note</div>
+            <p style={{ color: 'var(--text)', fontSize: 14 }}>{game.notes}</p>
           </div>
-        ))}
+        )}
+
+        {/* Results */}
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.7px' }}>
+            Résultats · {played.length} joueurs
+          </div>
+          {played.map((r) => (
+            <Link key={r.id} href={`/players/${r.player_id}`} className="row-link"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid var(--bg)' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 22, width: 32 }}>{MEDAL[r.position ?? 99] ?? `${r.position}`}</span>
+                <span style={{ fontSize: 14, color: 'var(--text)', fontWeight: 500 }}>{r.players?.name}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {r.chip_count != null && <span style={{ fontSize: 12, color: 'var(--muted)' }}>{r.chip_count} chips</span>}
+                <span className="badge badge-gold">+{r.points_earned} pts</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {absent.length > 0 && (
+          <div style={{ fontSize: 12, color: 'var(--muted)', padding: '10px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10 }}>
+            Absents : {absent.map((r) => r.players?.name).join(', ')}
+          </div>
+        )}
+
+        {/* Delete */}
+        <div style={{ paddingTop: 8 }}>
+          {!confirm ? (
+            <button onClick={() => setConfirm(true)} className="btn-danger">
+              <Trash2 size={14} /> Supprimer cette partie
+            </button>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button onClick={deleteGame} disabled={deleting} className="btn-danger" style={{ background: '#ef444420', borderColor: '#ef4444', opacity: deleting ? 0.5 : 1 }}>
+                {deleting ? 'Suppression…' : 'Confirmer la suppression'}
+              </button>
+              <button onClick={() => setConfirm(false)} className="btn-ghost">Annuler</button>
+            </div>
+          )}
+        </div>
+
       </div>
-
-      {absent.length > 0 && (
-        <div className="rounded-xl px-5 py-4 mb-6 text-sm" style={{ backgroundColor: 'var(--surface)', color: 'var(--muted)' }}>
-          Absents : {absent.map((r) => r.players?.name).join(', ')}
-        </div>
-      )}
-
-      {/* Delete */}
-      {!confirm ? (
-        <button
-          onClick={() => setConfirm(true)}
-          className="flex items-center gap-2 text-sm text-red-400 hover:opacity-80 transition-opacity"
-        >
-          <Trash2 size={16} /> Supprimer cette partie
-        </button>
-      ) : (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={deleteGame}
-            disabled={deleting}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:opacity-80 disabled:opacity-50"
-          >
-            {deleting ? 'Suppression…' : 'Confirmer la suppression'}
-          </button>
-          <button
-            onClick={() => setConfirm(false)}
-            className="text-sm"
-            style={{ color: 'var(--muted)' }}
-          >
-            Annuler
-          </button>
-        </div>
-      )}
     </div>
   );
 }
