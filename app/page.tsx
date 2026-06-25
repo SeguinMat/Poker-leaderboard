@@ -171,8 +171,7 @@ export default function HomePage() {
           <div className="p-8 text-center" style={{ color: 'var(--muted)' }}>Chargement…</div>
         ) : displayed.length === 0 ? (
           <div className="p-8 text-center" style={{ color: 'var(--muted)' }}>
-            Aucun joueur qualifié (minimum 3 parties).{' '}
-            <button onClick={() => setShowAll(true)} className="underline">Afficher tous</button>
+            Aucun joueur pour l'instant.
           </div>
         ) : (
           <div className="overflow-x-auto">
