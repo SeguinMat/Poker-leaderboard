@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, PlusCircle } from 'lucide-react';
+import { ArrowLeft, PlusCircle, Camera } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { Player, GameResult } from '@/lib/types';
 
@@ -12,12 +12,44 @@ interface PlayerWithStats extends Player {
   average: number;
 }
 
+function Avatar({ player, size = 40 }: { player: { name: string; avatar?: string | null }; size?: number }) {
+  if (player.avatar) {
+    return (
+      <img
+        src={player.avatar}
+        alt={player.name}
+        width={size}
+        height={size}
+        className="rounded-full object-cover flex-shrink-0"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="rounded-full flex items-center justify-center font-bold flex-shrink-0"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: 'var(--accent-green)',
+        color: 'white',
+        fontSize: size * 0.4,
+      }}
+    >
+      {player.name[0]?.toUpperCase()}
+    </div>
+  );
+}
+
 export default function PlayersPage() {
   const [players, setPlayers] = useState<PlayerWithStats[]>([]);
   const [newName, setNewName] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadPlayers();
@@ -52,17 +84,42 @@ export default function PlayersPage() {
     setLoading(false);
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }
+
   async function addPlayer(e: React.FormEvent) {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
     setAdding(true);
     setError('');
-    const { error: err } = await supabase.from('players').insert({ name });
+
+    let avatarUrl: string | null = null;
+
+    if (avatarFile) {
+      const ext = avatarFile.name.split('.').pop();
+      const path = `${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, avatarFile);
+      if (uploadErr) {
+        setError('Erreur upload image.');
+        setAdding(false);
+        return;
+      }
+      const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+      avatarUrl = data.publicUrl;
+    }
+
+    const { error: err } = await supabase.from('players').insert({ name, avatar: avatarUrl });
     if (err) {
       setError(err.message.includes('unique') ? 'Ce nom existe déjà.' : 'Erreur lors de l\'ajout.');
     } else {
       setNewName('');
+      setAvatarFile(null);
+      setAvatarPreview(null);
       await loadPlayers();
     }
     setAdding(false);
@@ -78,25 +135,54 @@ export default function PlayersPage() {
       </div>
 
       {/* Add player form */}
-      <form onSubmit={addPlayer} className="flex gap-2 mb-6">
-        <input
-          type="text"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          placeholder="Prénom ou pseudo…"
-          className="flex-1 rounded-lg px-4 py-3 text-sm"
-          style={{ backgroundColor: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--surface2)' }}
-        />
+      <form onSubmit={addPlayer} className="rounded-xl p-5 mb-6" style={{ backgroundColor: 'var(--surface)' }}>
+        <div className="flex items-center gap-4 mb-4">
+          {/* Avatar picker */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="relative flex-shrink-0 rounded-full overflow-hidden transition-opacity hover:opacity-80"
+            style={{ width: 56, height: 56, backgroundColor: 'var(--surface2)' }}
+          >
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="preview" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-0.5">
+                <Camera size={18} style={{ color: 'var(--muted)' }} />
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>Photo</span>
+              </div>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {/* Name input */}
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Prénom ou pseudo…"
+            className="flex-1 rounded-lg px-4 py-3 text-sm"
+            style={{ backgroundColor: 'var(--surface2)', color: 'var(--text)', border: 'none' }}
+          />
+        </div>
+
         <button
           type="submit"
           disabled={adding || !newName.trim()}
-          className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-medium transition-opacity hover:opacity-80 disabled:opacity-50"
           style={{ backgroundColor: 'var(--accent-gold)', color: '#0f1117' }}
         >
           <PlusCircle size={16} />
-          Ajouter
+          {adding ? 'Ajout…' : 'Ajouter le joueur'}
         </button>
       </form>
+
       {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
 
       {/* Players list */}
@@ -114,7 +200,8 @@ export default function PlayersPage() {
                 className="flex items-center justify-between px-5 py-4 hover:opacity-80 transition-opacity"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg font-bold w-8" style={{ color: 'var(--muted)' }}>{i + 1}</span>
+                  <span className="text-sm font-bold w-6 text-center" style={{ color: 'var(--muted)' }}>{i + 1}</span>
+                  <Avatar player={p} size={36} />
                   <span className="font-medium">{p.name}</span>
                 </div>
                 <div className="flex items-center gap-4 text-sm" style={{ color: 'var(--muted)' }}>

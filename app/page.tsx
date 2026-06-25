@@ -203,7 +203,14 @@ export default function HomePage() {
                         {MEDAL[rank] ?? rank}
                       </td>
                       <td className="px-4 py-4">
-                        <Link href={`/players/${s.player.id}`} className="font-medium hover:underline">
+                        <Link href={`/players/${s.player.id}`} className="flex items-center gap-2 font-medium hover:underline">
+                          {s.player.avatar ? (
+                            <img src={s.player.avatar} alt={s.player.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style={{ backgroundColor: 'var(--accent-green)', color: 'white' }}>
+                              {s.player.name[0]?.toUpperCase()}
+                            </div>
+                          )}
                           {s.player.name}
                         </Link>
                         {s.current_streak >= 2 && (
