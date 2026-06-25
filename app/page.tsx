@@ -16,7 +16,6 @@ const RANK_COLOR: Record<number, string> = {
 export default function HomePage() {
   const [stats, setStats] = useState<PlayerStats[]>([]);
   const [recentGames, setRecentGames] = useState<GameWithResults[]>([]);
-  const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,8 +90,7 @@ export default function HomePage() {
     setLoading(false);
   }
 
-  const qualified = stats.filter((s) => s.games_played >= 3);
-  const displayed = showAll ? stats : qualified;
+  const displayed = stats;
 
   const totalGames = recentGames.length > 0
     ? (recentGames[0] ? stats.reduce((acc, s) => Math.max(acc, 0), 0) : 0)
@@ -167,13 +165,6 @@ export default function HomePage() {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Star size={18} style={{ color: 'var(--accent-gold)' }} /> Classement
           </h2>
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-sm transition-opacity hover:opacity-80"
-            style={{ color: 'var(--muted)' }}
-          >
-            {showAll ? 'Afficher qualifiés (≥3 parties)' : `Afficher tous (${stats.length})`}
-          </button>
         </div>
 
         {loading ? (
