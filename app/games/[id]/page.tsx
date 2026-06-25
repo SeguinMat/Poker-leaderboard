@@ -49,7 +49,7 @@ export default function GameDetailPage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }} style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px', height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
           <Link href="/" className="btn-ghost" style={{ padding: '6px 10px' }}><ArrowLeft size={16} /></Link>
           <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 15 }}>
             {new Date(game.played_at).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -57,7 +57,7 @@ export default function GameDetailPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 20px' }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {game.heads_up_timer_used && (
           <div className="badge" style={{ alignSelf: 'flex-start', padding: '5px 12px' }}>⏱ Timer heads-up utilisé</div>

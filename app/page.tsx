@@ -96,7 +96,7 @@ export default function HomePage() {
 
       {/* Topbar */}
       <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 20px' }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52 }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 52 }}>
           <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent-gold)', letterSpacing: '-0.3px' }}>
             Poker Lunch <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: 13 }}>🃏</span>
           </span>
@@ -107,7 +107,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
