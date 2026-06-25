@@ -30,11 +30,11 @@ export default function GameDetailPage() {
   if (loading) return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }} style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link href="/" style={{ color: 'var(--muted)' }} className="btn-ghost" style2={{padding: '6px 10px'}}><ArrowLeft size={16} /></Link>
+        <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px', height: 52, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Link href="/" className="btn-ghost" style={{ padding: '6px 10px' }}><ArrowLeft size={16} /></Link>
         </div>
       </div>
-      <div className="max-w-2xl mx-auto px-5 py-8" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ maxWidth: 680, margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 48, borderRadius: 8 }} />)}
       </div>
     </div>
